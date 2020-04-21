@@ -1,0 +1,57 @@
+**PURPOSE**
+
+The DAIC-WOZ dataset contains many errors and noise (such as interruptions
+ during an interview or missing transcript files for the virtual agent). This
+  pre-processing framework has been designed to remove these errors to
+   provide a cleaner dataset to use for model building and testing. 
+   
+At this time, only the audio and the transcript files can be processed
+ with the visual data to be updated in the future. The transcript files
+  are converted to Word2Vec but the user can specify which audio features
+   to extract - raw audio, log-mel spectrogram, power spectrogram, MFCC. 
+      
+The output of this framework is a h5py file containing a cleaned, feature
+ extracted database ready for experimentation. Due to the nature of h5py, if
+  2D features are extracted, they are first flattened before being added, for
+   example for a file that is 100 samples long where log-mel spectrogram was
+    chosen with the number of mel bins = 64, the resulting file will be 6400
+     samples long and will need to be reshaped before use in training. 
+
+To obtain the features, class labels, scores, folders, and corresponding indexes for the extracted features use the following:
+`h5 = hrpy.File('filename.h5', 'r')
+features = h5['features']
+labels = h5['class']
+scores = h5['score']
+folders = h5['folder']
+index = h5['index']`
+
+2 further files will be created, summary.pickle which is a list of lists. The first list contains headers to the corresponding index in the second list. 
+The other file is meta_data.npy which holds sample rate, number of samples in current file, corresponding time in minutes, and folder number. 
+
+**SETUP**
+
+Install miniconda and load the environment file from environment.yml file
+
+`conda env create -f environment.yml`
+
+Activate the new environment: `conda activate myenv`
+
+For textual feature extraction the current framework uses Gensim 
+(https://radimrehurek.com/gensim/), current work is on creating an
+ alternative using Spacy (https://spacy.io/).
+
+**DATASET**
+
+For this experiment, the DAIC-WOZ dataset is used. This can be obtained
+ through The University of Southern California (http://dcapswoz.ict.usc.edu
+ /) by signing an agreement form. The dataset is roughly 135GB. 
+
+
+**EXPERIMENT SETUP**
+
+Use the config.py file to set experiment preferences and locations of the code, 
+workspace, and dataset directories etc. The main variables of interest are
+ found in the dictionary- EXPERIMENT_DETAILS. 
+
+To run the framework, go to the daic_woz_process directory and run:
+ `python -m run`
