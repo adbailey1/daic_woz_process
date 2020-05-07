@@ -4,8 +4,9 @@ The DAIC-WOZ dataset contains many errors and noise (such as interruptions
  during an interview or missing transcript files for the virtual agent). This
   pre-processing framework has been designed to remove these errors to
    provide a cleaner dataset to use for model building and testing. 
-   
-Every file contains interactions between the participant and researcher prior to the interview starting which need to be removed:
+
+List of known errors:
+ - Every file contains interactions between the participant and researcher prior to the interview starting which need to be removed:
  - Some interviews (373 and 444) contain long interruptions which should be removed.
  - Some interviews (451, 458, and 480,) are missing the virtual agent's transcriptions.
  - Some interviews (318, 321, 341, and 362) transcription files are out of sync with the audio. 
