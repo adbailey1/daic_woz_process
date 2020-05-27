@@ -131,7 +131,7 @@ def max_min_values(current_directory, win_size, hop_size, audio_paths,
 
 def create_database(labels, sample_rate, total_windows_in_file_max,
                     current_directory, features_exp, win_size, hop_size,
-                    freq_bins, main_logger, whole_train):
+                    freq_bins, main_logger, whole_train, gender='-'):
     """
     Creates a database of extracted features from the raw input data such as
     text or audio. The database contains metadata such as folder, class,
@@ -164,8 +164,12 @@ def create_database(labels, sample_rate, total_windows_in_file_max,
     # folders, classes and features will be written in ascending order.
     # The train, dev and test labels will provide the shuffling
     datatype = h5py.special_dtype(vlen=np.float32)
-    h5file = h5py.File(os.path.join(current_directory,
-                                    f"complete_database.h5"), 'w')
+    if gender == 'f' or gender == 'm':
+        h5file = h5py.File(os.path.join(current_directory,
+                                        f"complete_database_{gender}.h5"), 'w')
+    else:
+        h5file = h5py.File(os.path.join(current_directory,
+                                        f"complete_database.h5"), 'w')
     num_files = len(labels[0])
     h5file.create_dataset(name='folder',
                           data=[0] * num_files,
@@ -356,6 +360,12 @@ def process_organise_data(main_logger,
     main_logger.info(f"The number of samples after processing spectrogram "
                      f"for the max is {total_windows_in_file_max}, and for "
                      f"the min is {total_windows_in_file_min}")
+    if not os.path.exists(config.COMP_DATASET_PATH):
+        if not os.path.exists(config.FULL_TRAIN_SPLIT_PATH):
+            utilities.merge_csv(config.TRAIN_SPLIT_PATH, config.DEV_SPLIT_PATH,
+                                config.FULL_TRAIN_SPLIT_PATH)
+        utilities.merge_csv(config.FULL_TRAIN_SPLIT_PATH,
+                            config.TEST_SPLIT_PATH, config.COMP_DATASET_PATH)
 
     labels = utilities.get_labels_from_dataframe(config.COMP_DATASET_PATH)
 
@@ -366,18 +376,45 @@ def process_organise_data(main_logger,
     # l1 = labels[0][0:35]
     # l2 = labels[1][0:35]
     # l3 = labels[2][0:35]
-    # labels = [l1, l2, l3]
+    # l4 = labels[3][0:35]
+    # labels = [l1, l2, l3, l4]
+    if config.GENDER:
+        fin_label = [[[], [], []], [[], [], []]]
+        for i in range(len(labels[0])):
+            if labels[-1][i] == 0:
+                fin_label[0][0].append(labels[0][i])
+                fin_label[0][1].append(labels[1][i])
+                fin_label[0][2].append(labels[2][i])
+            else:
+                fin_label[1][0].append(labels[0][i])
+                fin_label[1][1].append(labels[1][i])
+                fin_label[1][2].append(labels[2][i])
 
-    num_samples_feature = create_database(labels,
-                                          sample_rate,
-                                          total_windows_in_file_max,
-                                          current_directory,
-                                          features_exp,
-                                          win_size,
-                                          hop_size,
-                                          freq_bins,
-                                          main_logger,
-                                          whole_train)
+        labels = fin_label
+        gender = ['f', 'm']
+        for i in range(2):
+            num_samples_feature = create_database(labels[i],
+                                                  sample_rate,
+                                                  total_windows_in_file_max,
+                                                  current_directory,
+                                                  features_exp,
+                                                  win_size,
+                                                  hop_size,
+                                                  freq_bins,
+                                                  main_logger,
+                                                  whole_train,
+                                                  gender=gender[i])
+    else:
+        num_samples_feature = create_database(labels,
+                                              sample_rate,
+                                              total_windows_in_file_max,
+                                              current_directory,
+                                              features_exp,
+                                              win_size,
+                                              hop_size,
+                                              freq_bins,
+                                              main_logger,
+                                              whole_train)
 
     summary_labels = ['MaxSamples',
                       'MaxWindows',
@@ -412,6 +449,8 @@ def startup():
     workspace = config.WORKSPACE_MAIN_DIR
     folder_name = config.FOLDER_NAME
     current_directory = os.path.join(workspace, folder_name)
+    if config.GENDER:
+        current_directory = current_directory + '_gen'
 
     # THIS WILL DELETE EVERYTHING IN THE CURRENT WORKSPACE #
     if os.path.exists(current_directory):

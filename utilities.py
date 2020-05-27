@@ -370,9 +370,36 @@ def get_labels_from_dataframe(path):
     df = pd.read_csv(path)
     output = [df['Participant_ID'].values.tolist(),
               df['PHQ8_Binary'].values.tolist(),
-              df['PHQ8_Score'].values.tolist()]
+              df['PHQ8_Score'].values.tolist(),
+              df['Gender'].values.tolist()]
 
     return output
+
+
+def merge_csv(path, path2, filename):
+    a = pd.read_csv(path)
+    b = pd.read_csv(path2)
+
+    columnsa = list(a)
+    columnsb = list(b)
+    if len(columnsa) > len(columnsb):
+        difference = len(columnsa) - len(columnsb)
+        names = columnsa[-difference:]
+        h, _ = b.shape
+        zeros = [-1] * h
+        for i in range(difference):
+            b[names[i]] = zeros
+
+    columnsb = list(b)
+    for i in range(len(columnsa)):
+        if columnsa[i] != columnsb[i]:
+            b = b.rename(columns={columnsb[i]: columnsa[i]})
+
+    dataframes = [a, b]
+    c = pd.concat(dataframes)
+    c = c.sort_values(by=['Participant_ID'])
+
+    c.to_csv(filename, index=False)
 
 
 def get_dimensions(feature, summary, dim, audio_mode_is_concat_not_shorten):

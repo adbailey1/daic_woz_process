@@ -7,11 +7,11 @@ import numpy as np
 # FEATURE_EXP: logmel or raw or MFCC or MFCC_concat or text
 # WHOLE_TRAIN: This setting is for mitigating the variable length of the data
 # by zero padding
-EXPERIMENT_DETAILS = {'FEATURE_EXP': 'text',
+EXPERIMENT_DETAILS = {'FEATURE_EXP': 'raw',
                       'AUDIO_MODE_IS_CONCAT_NOT_SHORTEN': True,
                       'MAKE_DATASET_EQUAL': False,
-                      'FEATURE_DIMENSIONS': 120,
-                      'FREQ_BINS': 30,
+                      'FEATURE_DIMENSIONS': 55000,
+                      'FREQ_BINS': 1,
                       'SUB_DIR': 'exp_1a',
                       'DATASET_IS_BACKGROUND': False,
                       'CONVERT_TO_IMAGE': False,
@@ -21,7 +21,8 @@ EXPERIMENT_DETAILS = {'FEATURE_EXP': 'text',
                       'SAMPLE_RATE': 16000,
                       'REMOVE_BACKGROUND': True,
                       'SECONDS_TO_SEGMENT': 30}
-
+# Set True to split data into genders
+GENDER = True
 WINDOW_FUNC = np.hanning(EXPERIMENT_DETAILS['WINDOW_SIZE'])
 FMIN = 0
 FMAX = EXPERIMENT_DETAILS['SAMPLE_RATE'] / 2
@@ -106,7 +107,7 @@ elif os.uname()[1] == 'andrew-ubuntu':
     WORKSPACE_MAIN_DIR = '/mnt/6663b3e6-a12f-49e8-b881-421cebf2f8c6/daic_woz_2'
     WORKSPACE_FILES_DIR = os.path.join('/home', 'andrew', 'PycharmProjects',
                                        'daic_woz_process')
-    TRAIN_SPLIT_PATH = os.path.join(DATASET, 'DAIC-WOZ', 'train_split_Depression_AVEC2017.csv')
+    TRAIN_SPLIT_PATH = os.path.join(DATASET, 'train_split_Depression_AVEC2017.csv')
     DEV_SPLIT_PATH = os.path.join(DATASET, 'dev_split_Depression_AVEC2017.csv')
     TEST_SPLIT_PATH = os.path.join(DATASET, 'test_split_Depression_AVEC2017.csv')
     FULL_TRAIN_SPLIT_PATH = os.path.join(DATASET, 'full_train_split_Depression_AVEC2017.csv')
