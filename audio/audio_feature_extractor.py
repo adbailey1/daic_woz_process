@@ -22,10 +22,12 @@ class LogMelExtractor:
         logmel_spectrogram: numpy.array - The log-Mel spectrogram
     """
     def __init__(self, sample_rate, window_size, hop_size, mel_bins, fmin,
-                 fmax, window_func):
+                 fmax, window_func, log=True, svn=False):
         self.window_size = window_size
         self.hop_size = hop_size
         self.window_func = window_func
+        self.log = log
+        self.svn = svn
 
         # Output in the form of ((n_fft//2 + 1), mel_bins)
         self.melW = librosa.filters.mel(sr=sample_rate,
@@ -48,20 +50,23 @@ class LogMelExtractor:
                                   window_func=self.window_func)
 
         # Mel spectrogram
-        mel_spectrogram = np.dot(stft_matrix.T, self.melW.T)
+        spectrogram = np.dot(stft_matrix.T, self.melW.T)
 
         # Log mel spectrogram
-        logmel_spectrogram = librosa.core.power_to_db(
-            mel_spectrogram, ref=1.0, amin=1e-10,
-            top_db=None)
+        if self.log:
+            spectrogram = librosa.core.power_to_db(spectrogram, ref=1.0,
+                                                   amin=1e-10, top_db=None)
 
-        logmel_spectrogram = logmel_spectrogram.astype(np.float32).T
+        spectrogram = spectrogram.astype(np.float32).T
 
-        return logmel_spectrogram
+        if self.svn:
+            spectrogram = standard_normal_variate(spectrogram)
+
+        return spectrogram
 
 
 def sepctrogram(audio, window_size, hop_size, squared,
-                window_func=np.hanning(1024)):
+                window_func=np.hanning(1024), svn=False):
     """
     Computes the STFT of some audio data.
 
@@ -84,7 +89,17 @@ def sepctrogram(audio, window_size, hop_size, squared,
     if squared:
         stft_matrix = stft_matrix ** 2
 
+    if svn:
+        stft_matrix = standard_normal_variate(stft_matrix)
+
     return stft_matrix
+
+
+def standard_normal_variate(data):
+    mean = np.mean(data)
+    std = np.std(data)
+
+    return (data - mean) / std
 
 
 def create_mfcc_delta(feature, concat=False):

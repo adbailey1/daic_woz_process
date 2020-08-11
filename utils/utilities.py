@@ -9,16 +9,12 @@ import logging
 import logging.handlers
 import csv
 import shutil
-import config_process
-import gensim
+from config_files import config_process
 from gensim import corpora
-import spacy
 
 
-def transcript_file_processing(transcript_paths,
-                               current_dir,
-                               mode_for_bkgnd=False,
-                               remove_background=True):
+def transcript_file_processing(transcript_paths, current_dir,
+                               mode_for_bkgnd=False, remove_background=True):
     """
     Goes through the transcript files in the dataset and processes them in
     several ways. For the known files that contain errors, config_process,

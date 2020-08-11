@@ -1,20 +1,16 @@
 import psutil
-import config
-import config_process
 import os
 from shutil import copyfile, rmtree
 import sys
-import utilities
+from utils import utilities, file_analysis as fa, plotter
 import numpy as np
 import librosa
 import h5py
-import audio_feature_extractor
+from audio import audio_feature_extractor
 import pickle
 import gc
 import math
-import plotter
-import config
-import file_analysis as fa
+from config_files import config, config_process, create_folder_name
 
 
 def modify_audio_file(data, timings, sr, mode=False):
@@ -119,7 +115,7 @@ def max_min_values(current_directory, win_size, hop_size, audio_paths,
     # output = ((audio - window) // hop) + 1
     # If padding=True is used, both the start and end are padded by the hop
     # length.
-    # output = (((audio + (hop * 2)) - window) // hop) + 1
+    # output = (audio // hop) + 1
     total_windows_in_file_max = (max_value + (hop_size * 2)) - win_size
     total_windows_in_file_max = (total_windows_in_file_max // hop_size) + 1
     total_windows_in_file_min = (min_value + (hop_size * 2)) - win_size
@@ -129,8 +125,8 @@ def max_min_values(current_directory, win_size, hop_size, audio_paths,
            total_windows_in_file_min, output_data
 
 
-def create_database(labels, sample_rate, total_windows_in_file_max,
-                    current_directory, features_exp, win_size, hop_size,
+def create_database(labels, sample_rate, total_windows_in_file_max, max_value,
+                    current_directory, features_exp, win_size, hop_size, svn,
                     freq_bins, main_logger, whole_train, gender='-'):
     """
     Creates a database of extracted features from the raw input data such as
@@ -180,6 +176,9 @@ def create_database(labels, sample_rate, total_windows_in_file_max,
     h5file.create_dataset(name='score',
                           data=[0] * num_files,
                           dtype=np.int8)
+    h5file.create_dataset(name='gender',
+                          data=[0] * num_files,
+                          dtype=np.int8)
     h5file.create_dataset(name='index',
                           data=[0] * num_files,
                           dtype=np.int16)
@@ -195,15 +194,15 @@ def create_database(labels, sample_rate, total_windows_in_file_max,
     window_func = config.WINDOW_FUNC
 
     # Feature extractor
-    if features_exp == 'logmel':
+    if features_exp == 'logmel' or features_exp == 'mel':
+        if features_exp == 'mel':
+            log = False
+        else:
+            log = True
         feature_extractor = audio_feature_extractor.LogMelExtractor(
-            sample_rate=sample_rate,
-            window_size=win_size,
-            hop_size=hop_size,
-            mel_bins=freq_bins,
-            fmin=fmin,
-            fmax=fmax,
-            window_func=window_func)
+            sample_rate=sample_rate, window_size=win_size, hop_size=hop_size,
+            mel_bins=freq_bins,fmin=fmin, fmax=fmax,window_func=window_func,
+            log=log, svn=svn)
 
     # Loop through all the files and get the sampling rate, number of
     # samples and the time in minutes
@@ -215,40 +214,45 @@ def create_database(labels, sample_rate, total_windows_in_file_max,
         updated_file = np.load(audio_file_path)
 
         # Log mel spectrogram
-        if features_exp == 'logmel':
-            logmel_spec = feature_extractor.transform(updated_file)
-            plotter.save_plain_plot(current_directory, str(folder),
-                                    logmel_spec, features_exp)
+        if features_exp == 'logmel' or features_exp == 'mel':
+            mel_spec = feature_extractor.transform(updated_file)
+            plotter.save_plain_plot(current_directory, str(folder), mel_spec,
+                                    features_exp)
 
-            print('Folder Name: ', folder, ' dimensions are: ',
-                  logmel_spec.shape[0], logmel_spec.shape[1])
+            print('Folder Name: ', folder, ' dimensions are: ', mel_spec.shape[
+                0], mel_spec.shape[1])
             main_logger.info(
-                f"Successfully created log-mel spectrogram for the "
+                f"Successfully created {features_exp} spectrogram for the "
                 f"audio file at: {folder}, it's dimensions "
-                f"are: {logmel_spec.shape[0]}, "
-                f"{logmel_spec.shape[1]}")
-            height, width = logmel_spec.shape
+                f"are: {mel_spec.shape[0]}, "
+                f"{mel_spec.shape[1]}")
+            height, width = mel_spec.shape
             num_samples_feature.append(width)
             if whole_train:
-                length = logmel_spec.shape[-1]
+                length = mel_spec.shape[-1]
                 if length < total_windows_in_file_max:
                     diff = int(total_windows_in_file_max - length)
-                    logmel_spec = np.hstack((logmel_spec, np.zeros((freq_bins,
-                                                                    diff))))
-                height, width = logmel_spec.shape
+                    mel_spec = np.hstack((mel_spec, np.zeros((freq_bins,
+                                                              diff))))
+                height, width = mel_spec.shape
             new_length = width * height
-            feat_reshaped = np.reshape(logmel_spec, new_length)
+            feat_reshaped = np.reshape(mel_spec, new_length)
         elif features_exp == 'spectrogram':
             feat = audio_feature_extractor.sepctrogram(updated_file,
-                                                       win_size, hop_size,
-                                                       True,
-                                                       window_func)
+                                                       win_size, hop_size, True,
+                                                       window_func, svn)
             plotter.save_plain_plot(current_directory, str(folder), feat,
                                     features_exp)
             print('Folder Name: ', folder, ' dimensions are: ',
                   feat.shape[0], feat.shape[1])
             height, width = feat.shape
             num_samples_feature.append(width)
+            if whole_train:
+                length = feat.shape[-1]
+                if length < total_windows_in_file_max:
+                    diff = int(total_windows_in_file_max - length)
+                    feat = np.hstack((feat, np.zeros((freq_bins, diff))))
+                height, width = feat.shape
             new_length = width * height
             feat_reshaped = np.reshape(feat, new_length)
 
@@ -256,7 +260,7 @@ def create_database(labels, sample_rate, total_windows_in_file_max,
                 f"Successfully created spectrogram for the "
                 f"audio file at: {folder}, it's dimensions "
                 f"are: {feat.shape[0]}, {feat.shape[1]}")
-        if features_exp == 'MFCC' or features_exp == 'MFCC_concat':
+        elif features_exp == 'MFCC' or features_exp == 'MFCC_concat':
             mfcc = audio_feature_extractor.mfcc(updated_file, sample_rate,
                                                 freq_bins, win_size, hop_size,
                                                 window_func)
@@ -276,10 +280,19 @@ def create_database(labels, sample_rate, total_windows_in_file_max,
             new_length = width * height
             feat_reshaped = np.reshape(mfcc, new_length)
         elif features_exp == 'raw':
-            feat_reshaped = updated_file    
-            num_samples_feature.append(updated_file.shape[-1])
+            feat_reshaped = updated_file
+            if svn:
+                feat_reshaped = \
+                    audio_feature_extractor.standard_normal_variate(feat_reshaped)
+            if whole_train:
+                length = feat_reshaped.shape[0]
+                if length < max_value:
+                    diff = int(max_value - length)
+                    feat_reshaped = np.hstack((feat_reshaped, np.zeros(diff)))
+            num_samples_feature.append(feat_reshaped.shape[-1])
 
         clss = labels[1][pointer]
+        gen = labels[3][pointer]
         if math.isnan(labels[2][pointer]):
             scre = -1
         else:
@@ -292,6 +305,7 @@ def create_database(labels, sample_rate, total_windows_in_file_max,
         else:
             h5file['class'][pointer] = clss
         h5file['score'][pointer] = scre
+        h5file['gender'][pointer] = gen
         h5file['index'][pointer] = pointer
 
         process = psutil.Process(os.getpid())
@@ -329,6 +343,7 @@ def process_organise_data(main_logger,
     hop_size = config.HOP_SIZE
     freq_bins = config.EXPERIMENT_DETAILS['FREQ_BINS']
     whole_train = config.EXPERIMENT_DETAILS['WHOLE_TRAIN']
+    svn = config.EXPERIMENT_DETAILS['SVN']
 
     main_logger.info(f"The experiment dir is: {features_exp}")
     main_logger.info(f"The feature dir: {current_directory}")
@@ -345,11 +360,7 @@ def process_organise_data(main_logger,
     # FOR DEBUGGING USE FILES 6:9 IN ORDER TO GET ONE CLASS "1"s
     max_value, min_value, sample_rate, total_windows_in_file_max, \
     total_windows_in_file_min, output_data = max_min_values(
-        current_directory,
-        win_size,
-        hop_size,
-        audio_paths,
-        on_off_times,
+        current_directory, win_size, hop_size, audio_paths, on_off_times,
         mode_for_background)
     print('max_value is: ', max_value, ' number of windows in each file '
                                        'is: ', total_windows_in_file_max)
@@ -379,57 +390,42 @@ def process_organise_data(main_logger,
     # l4 = labels[3][0:35]
     # labels = [l1, l2, l3, l4]
     if config.GENDER:
-        fin_label = [[[], [], []], [[], [], []]]
+        fin_label = [[[], [], [], []], [[], [], [], []]]
         for i in range(len(labels[0])):
             if labels[-1][i] == 0:
                 fin_label[0][0].append(labels[0][i])
                 fin_label[0][1].append(labels[1][i])
                 fin_label[0][2].append(labels[2][i])
+                fin_label[0][3].append(labels[3][i])
             else:
                 fin_label[1][0].append(labels[0][i])
                 fin_label[1][1].append(labels[1][i])
                 fin_label[1][2].append(labels[2][i])
+                fin_label[1][3].append(labels[3][i])
 
         labels = fin_label
         gender = ['f', 'm']
         for i in range(2):
-            num_samples_feature = create_database(labels[i],
-                                                  sample_rate,
+            num_samples_feature = create_database(labels[i], sample_rate,
                                                   total_windows_in_file_max,
-                                                  current_directory,
-                                                  features_exp,
-                                                  win_size,
-                                                  hop_size,
-                                                  freq_bins,
-                                                  main_logger,
-                                                  whole_train,
+                                                  max_value, current_directory,
+                                                  features_exp, win_size,
+                                                  hop_size, svn, freq_bins,
+                                                  main_logger, whole_train,
                                                   gender=gender[i])
     else:
-        num_samples_feature = create_database(labels,
-                                              sample_rate,
+        num_samples_feature = create_database(labels, sample_rate,
                                               total_windows_in_file_max,
-                                              current_directory,
-                                              features_exp,
-                                              win_size,
-                                              hop_size,
-                                              freq_bins,
-                                              main_logger,
-                                              whole_train)
+                                              max_value, current_directory,
+                                              features_exp, win_size,
+                                              hop_size, svn, freq_bins,
+                                              main_logger, whole_train)
 
-    summary_labels = ['MaxSamples',
-                      'MaxWindows',
-                      'MinSamples',
-                      'MinWindows',
-                      'SampleRate',
-                      'NumberFiles',
-                      'ListOfSamples']
+    summary_labels = ['MaxSamples', 'MaxWindows', 'MinSamples', 'MinWindows',
+                      'SampleRate', 'NumberFiles', 'ListOfSamples']
 
-    summary_values = [max_value,
-                      total_windows_in_file_max,
-                      min_value,
-                      total_windows_in_file_min,
-                      sample_rate,
-                      len(labels[0]),
+    summary_values = [max_value, total_windows_in_file_max, min_value,
+                      total_windows_in_file_min, sample_rate, len(labels[0]),
                       num_samples_feature]
 
     save_path = os.path.join(current_directory, 'summary.pickle')
@@ -447,7 +443,7 @@ def startup():
     dataset.
     """
     workspace = config.WORKSPACE_MAIN_DIR
-    folder_name = config.FOLDER_NAME
+    folder_name = create_folder_name.FOLDER_NAME
     current_directory = os.path.join(workspace, folder_name)
     if config.GENDER:
         current_directory = current_directory + '_gen'
@@ -464,12 +460,10 @@ def startup():
             sys.exit()
 
     os.mkdir(current_directory)
-    utilities.create_directories(current_directory,
-                                 config.FEATURE_FOLDERS)
+    utilities.create_directories(current_directory, config.FEATURE_FOLDERS)
 
     main_logger = utilities.setup_logger(current_directory)
 
     main_logger.info(f"The workspace: {workspace}")
 
-    process_organise_data(main_logger,
-                          current_directory)
+    process_organise_data(main_logger, current_directory)

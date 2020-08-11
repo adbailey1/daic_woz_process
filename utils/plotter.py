@@ -4,7 +4,7 @@ from librosa import display
 import os
 import numpy as np
 import pandas as pd
-from utilities import create_directories
+from utils.utilities import create_directories
 
 
 def mel(mel_filter):

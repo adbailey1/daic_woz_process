@@ -1,8 +1,7 @@
 import os
-import config
-import audio_file_analysis
-import text_file_analysis
-
+from config_files import config
+from audio import audio_file_analysis
+from text import text_file_analysis
 
 if __name__ == "__main__":
     """

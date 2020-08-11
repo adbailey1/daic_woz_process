@@ -13,7 +13,9 @@ List of known errors:
  - A labelling error was also found for interview 409, whose PHQ-8 score was 10 but the binary value given was 0 rather than 1. 
 
 At this time, only the audio and the transcript files can be processed
- with the visual data to be updated in the future. The transcript files
+ with the visual data to be updated in the future.
+  ***UPDATE*** The Text data has not been tested for latest update
+  The transcript files
   are converted to Word2Vec but the user can specify which audio features
    to extract - raw audio, log-mel spectrogram, power spectrogram, MFCC. 
       
@@ -24,12 +26,14 @@ The output of this framework is a h5py file containing a cleaned, feature
     chosen with the number of mel bins = 64, the resulting file will be 6400
      samples long and will need to be reshaped before use in training. 
 
-To obtain the features, class labels, scores, folders, and corresponding indexes for the extracted features use the following:
+To obtain the features, class labels, scores, gender, folders, and corresponding
+ indexes for the extracted features use the following:
 `h5 = hrpy.File('filename.h5', 'r')
 features = h5['features']
 labels = h5['class']
 scores = h5['score']
 folders = h5['folder']
+genders = h5['gender']
 index = h5['index']`
 
 2 further files will be created, summary.pickle which is a list of lists. The first list contains headers to the corresponding index in the second list. 
@@ -39,7 +43,13 @@ The other file is meta_data.npy which holds sample rate, number of samples in cu
 
 Install miniconda and load the environment file from environment.yml file
 
+For Linux: 
+
 `conda env create -f environment.yml`
+
+For Windows:
+
+`conda env create -f env_windows.yml`
 
 Activate the new environment: `conda activate myenv`
 
@@ -56,9 +66,12 @@ For this experiment, the DAIC-WOZ dataset is used. This can be obtained
 
 **EXPERIMENT SETUP**
 
+Before Running an Experiment:
 Use the config.py file to set experiment preferences and locations of the code, 
 workspace, and dataset directories etc. The main variables of interest are
  found in the dictionary- EXPERIMENT_DETAILS. 
 
 To run the framework, go to the daic_woz_process directory and run:
  `python -m run`
+ 
+

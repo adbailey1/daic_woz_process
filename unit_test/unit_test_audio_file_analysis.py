@@ -1,10 +1,9 @@
-import importlib
-import config
+from config_files import config
 import os
-import audio_file_analysis
+from audio import audio_file_analysis
 import shutil
 import time
-import utilities
+from utils import utilities
 import pickle
 import csv
 import random

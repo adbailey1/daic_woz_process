@@ -1,0 +1,16 @@
+name: daic
+channels:
+  - defaults
+dependencies:
+  - numpy
+  - h5py
+  - librosa
+  - pandas
+  - scikit-learn
+  - torchvision
+  - pytorch
+  - cudatoolkit=10.1
+  - psutil
+  - gensim
+  - numba==0.48
+prefix: C:\Users\Andrew\miniconda3\envs\daic

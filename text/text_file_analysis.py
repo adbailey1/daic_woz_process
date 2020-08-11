@@ -1,18 +1,16 @@
 import psutil
-import config
-import config_process
+from config_files import config, config_process
 import os
 from shutil import copyfile, rmtree
 import sys
-import utilities
+from utils import utilities, file_analysis as fa
 import numpy as np
 import h5py
-import text_feature_extractor
+from text import text_feature_extractor
 import pickle
 import gc
 import math
-from gensim.models import Word2Vec, KeyedVectors
-import file_analysis as fa
+from gensim.models import Word2Vec
 
 
 def max_min_values(per_file_text, current_directory):

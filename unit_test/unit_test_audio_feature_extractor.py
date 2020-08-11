@@ -1,13 +1,5 @@
-import importlib
-import config
-import os
-import audio_feature_extractor
-import shutil
+from audio import audio_feature_extractor
 import time
-import utilities
-import pickle
-import csv
-import random
 import numpy as np
 import librosa
 
