@@ -46,5 +46,3 @@ else:
         FOLDER_NAME = FOLDER_NAME + '_bkgnd_exp'
     else:
         FOLDER_NAME = FOLDER_NAME + '_exp'
-
-FOLDER_NAME = FOLDER_NAME + 'TEST'
