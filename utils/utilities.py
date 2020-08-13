@@ -373,11 +373,14 @@ def get_labels_from_dataframe(path):
 
 
 def merge_csv(path, path2, filename):
+  
     a = pd.read_csv(path)
     b = pd.read_csv(path2)
 
     columnsa = list(a)
     columnsb = list(b)
+    # The test split doesn't have the same columns as the train/dev
+    # Create these extra columns and fill them with -1
     if len(columnsa) > len(columnsb):
         difference = len(columnsa) - len(columnsb)
         names = columnsa[-difference:]
@@ -387,10 +390,13 @@ def merge_csv(path, path2, filename):
             b[names[i]] = zeros
 
     columnsb = list(b)
+    # This checks that the column headers are the same in the two CSV files
     for i in range(len(columnsa)):
+        # If headers are different, re-name
         if columnsa[i] != columnsb[i]:
             b = b.rename(columns={columnsb[i]: columnsa[i]})
-
+    
+    # Create a single dataframe from the 2 CSV files and save
     dataframes = [a, b]
     c = pd.concat(dataframes)
     c = c.sort_values(by=['Participant_ID'])
