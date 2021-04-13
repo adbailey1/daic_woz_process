@@ -52,6 +52,8 @@ For Windows:
 `conda env create -f env_windows.yml`
 
 Activate the new environment: `conda activate myenv`
+If you have used the `environment.yml` file provided here, the name of the environment will be "daic", therefore:
+`conda activate daic`
 
 For textual feature extraction the current framework uses Gensim 
 (https://radimrehurek.com/gensim/), current work is on creating an
