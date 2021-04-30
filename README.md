@@ -41,15 +41,14 @@ The other file is meta_data.npy which holds sample rate, number of samples in cu
 
 **SETUP**
 
+This has been designed for Ubuntu (18.04) using Python 3
+
 Install miniconda and load the environment file from environment.yml file
 
 For Linux: 
 
 `conda env create -f environment.yml`
 
-For Windows:
-
-`conda env create -f env_windows.yml`
 
 Activate the new environment: `conda activate myenv`
 If you have used the `environment.yml` file provided here, the name of the environment will be "daic", therefore:
