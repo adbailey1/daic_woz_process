@@ -201,7 +201,7 @@ def create_database(labels, sample_rate, total_windows_in_file_max, max_value,
             log = True
         feature_extractor = audio_feature_extractor.LogMelExtractor(
             sample_rate=sample_rate, window_size=win_size, hop_size=hop_size,
-            mel_bins=freq_bins,fmin=fmin, fmax=fmax,window_func=window_func,
+            mel_bins=freq_bins, fmin=fmin, fmax=fmax, window_func=window_func,
             log=log, svn=svn)
 
     # Loop through all the files and get the sampling rate, number of
@@ -260,10 +260,11 @@ def create_database(labels, sample_rate, total_windows_in_file_max, max_value,
                 f"Successfully created spectrogram for the "
                 f"audio file at: {folder}, it's dimensions "
                 f"are: {feat.shape[0]}, {feat.shape[1]}")
-        elif features_exp == 'MFCC' or features_exp == 'MFCC_concat':
+        elif features_exp.lower() == 'mfcc' or features_exp.lower() == \
+                'mfcc_concat':
             mfcc = audio_feature_extractor.mfcc(updated_file, sample_rate,
                                                 freq_bins, win_size, hop_size,
-                                                window_func)
+                                                window_func, svn)
             print('Folder Name: ', folder, ' dimensions are: ', mfcc.shape[
                 0], mfcc.shape[1])
             main_logger.info(
@@ -433,7 +434,7 @@ def process_organise_data(main_logger,
         summary = [summary_labels, summary_values]
         pickle.dump(summary, f)
 
-    copyfile(workspace_files_dir + '/config.py',
+    copyfile(workspace_files_dir + '/config_files/config.py',
              current_directory + '/config.py')
 
 

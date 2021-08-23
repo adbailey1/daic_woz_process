@@ -5,17 +5,17 @@ import numpy as np
 # WHOLE_TRAIN: This setting is for mitigating the variable length of the data
 # by zero padding
 # SVN will normalise every file to mean=0 and standard deviation=1
-EXPERIMENT_DETAILS = {'FEATURE_EXP': 'raw',
+EXPERIMENT_DETAILS = {'FEATURE_EXP': 'mel',
                       'FREQ_BINS': 40,
                       'DATASET_IS_BACKGROUND': False,
-                      'WHOLE_TRAIN': True,
+                      'WHOLE_TRAIN': False,
                       'WINDOW_SIZE': 1024,
                       'OVERLAP': 50,
                       'SVN': True,
                       'SAMPLE_RATE': 16000,
                       'REMOVE_BACKGROUND': True}
 # Set True to split data into genders
-GENDER = True
+GENDER = False
 WINDOW_FUNC = np.hanning(EXPERIMENT_DETAILS['WINDOW_SIZE'])
 FMIN = 0
 FMAX = EXPERIMENT_DETAILS['SAMPLE_RATE'] / 2

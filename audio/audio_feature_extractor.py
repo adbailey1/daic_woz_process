@@ -126,7 +126,7 @@ def create_mfcc_delta(feature, concat=False):
 
 
 def mfcc(audio, sample_rate, freq_bins, window_size, hop_size,
-         window_func=np.hanning(1024)):
+         window_func=np.hanning(1024), svn=False):
     """
     Obtains the local differential (first and second order) of the MFCC
 
@@ -147,6 +147,9 @@ def mfcc(audio, sample_rate, freq_bins, window_size, hop_size,
                                 n_fft=window_size,
                                 hop_length=hop_size,
                                 window=window_func)
+
+    if svn:
+        mfcc = standard_normal_variate(mfcc)
 
     return mfcc
 
