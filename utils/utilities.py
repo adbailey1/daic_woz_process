@@ -9,8 +9,92 @@ import logging
 import logging.handlers
 import csv
 import shutil
-from config_files import config_process
+from config_files import config_process, config
 from gensim import corpora
+
+
+def fix_test_files():
+    """
+    Explicitly fixes issues in both sets of test .csv files (should they exist)
+    :return:
+    """
+    test_file1 = config.TEST_SPLIT_PATH_1
+    test_file2 = config.TEST_SPLIT_PATH_2
+    train_file = config.TRAIN_SPLIT_PATH
+
+    files = [test_file1, test_file2]
+    for i in files:
+        if os.path.exists(i):
+            print(f"The file does not exist: {i}")
+            pass
+        else:
+            _, b, _, columnsb = meta_data_checker(train_file, i)
+
+            temp = i.split('.')[0] + '_original.csv'
+            os.rename(i, temp)
+            b = b.sort_values(by=['Participant_ID'])
+            b.to_csv(i, index=False)
+
+
+def meta_data_checker(path1, path2):
+    """
+    Checks the meta-data from the .csv files from path1 and path2. If the
+    headers are different, resolve by using path1 (should be
+    train_split_Depression_AVEC2017.csv) as the standard. Also, check and fix
+    any wrong labels
+
+    :param path1: Path to the first .csv file
+    :param path2: Path to the second .csv file
+    :return: Updated dataframes for path1, path2 and their respective column
+    headers
+    """
+    a = pd.read_csv(path1)
+    b = pd.read_csv(path2)
+
+    columnsa = list(a)
+    columnsb = list(b)
+    # The test split doesn't have the same columns as the train/dev
+    # Create these extra columns and fill them with -1
+    if len(columnsa) > len(columnsb):
+        loc_to_indx = {i: header for i, header in enumerate(columnsa)}
+        for i in loc_to_indx:
+            if i < len(columnsb):
+                if loc_to_indx[i] == columnsb[i]:
+                    pass
+                elif loc_to_indx[i].lower() == columnsb[i].lower():
+                    b = b.rename(columns={columnsb[i]: columnsa[i]})
+                elif loc_to_indx[i].split('_')[-1] == columnsb[i].split('_')[
+                    -1]:
+                    b = b.rename(columns={columnsb[i]: columnsa[i]})
+                else:
+                    try:
+                        b.insert(i, loc_to_indx[i], [-1] * b.shape[0])
+                        columnsb = list(b)
+                    except:
+                        b[loc_to_indx[i]] = [-1] * b.shape[0]
+            else:
+                break
+        difference = len(columnsa) - len(columnsb)
+        names = columnsa[-difference:]
+        h, _ = b.shape
+        in_place = [-1] * h
+        for i in range(difference):
+            b[names[i]] = in_place
+
+    # Only need to do this over dataframe a as the only error currently
+    # known is in train_split_Depression_AVEC2017.csv
+    for file in config_process.wrong_labels:
+        if file in list(a['Participant_ID']):
+            location = list(a['Participant_ID']).index(file)
+            if a.loc[location, 'PHQ8_Binary'] != config_process.wrong_labels[
+                file]:
+                a.loc[location, 'PHQ8_Binary'] = config_process.wrong_labels[file]
+
+                temp = path1.split('.')[0] + '_original.csv'
+                os.rename(path1, temp)
+                a = a.sort_values(by=['Participant_ID'])
+                a.to_csv(path1, index=False)
+    return a, b, columnsa, columnsb
 
 
 def transcript_file_processing(transcript_paths, current_dir,
@@ -372,39 +456,16 @@ def get_labels_from_dataframe(path):
     return output
 
 
-def merge_csv(path, path2, filename):
-  
-    a = pd.read_csv(path)
-    b = pd.read_csv(path2)
-
-    columnsa = list(a)
-    columnsb = list(b)
-    # The test split doesn't have the same columns as the train/dev
-    # Create these extra columns and fill them with -1
-    if len(columnsa) > len(columnsb):
-        loc_to_indx = {i: header for i, header in enumerate(columnsa)}
-        for i in loc_to_indx:
-            if i < len(columnsb):
-                if loc_to_indx[i] == columnsb[i]:
-                    pass
-                elif loc_to_indx[i].lower() == columnsb[i].lower():
-                    b = b.rename(columns={columnsb[i]: columnsa[i]})
-                elif loc_to_indx[i].split('_')[-1] == columnsb[i].split('_')[-1]:
-                    b = b.rename(columns={columnsb[i]: columnsa[i]})
-                else:
-                    try:
-                        b.insert(i, loc_to_indx[i], [-1] * b.shape[0])
-                        columnsb = list(b)
-                    except:
-                        b[loc_to_indx[i]] = [-1] * b.shape[0]
-            else:
-                break
-        difference = len(columnsa) - len(columnsb)
-        names = columnsa[-difference:]
-        h, _ = b.shape
-        in_place = [-1] * h
-        for i in range(difference):
-            b[names[i]] = in_place
+def merge_csv(path1, path2, filename):
+    """
+    Takes 2 paths to 2 .csv files and merges them into one single dataframe.
+    This is then saved at the location specified in filename
+    :param path1: Path to the first .csv file
+    :param path2: Path to the second .csv file
+    :param filename: Path to save the concatenated dataframe
+    :return:
+    """
+    a, b, columnsa, columnsb = meta_data_checker(path1, path2)
 
     columnsb = list(b)
     # This checks that the column headers are the same in the two CSV files
@@ -412,7 +473,7 @@ def merge_csv(path, path2, filename):
         # If headers are different, re-name
         if columnsa[i] != columnsb[i]:
             b = b.rename(columns={columnsb[i]: columnsa[i]})
-    
+
     # Create a single dataframe from the 2 CSV files and save
     dataframes = [a, b]
     c = pd.concat(dataframes)

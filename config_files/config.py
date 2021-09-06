@@ -32,7 +32,9 @@ WORKSPACE_MAIN_DIR = '/path/for/extracted_database_features'
 WORKSPACE_FILES_DIR = '/path/to/this/code/directory'
 TRAIN_SPLIT_PATH = os.path.join(DATASET, 'train_split_Depression_AVEC2017.csv')
 DEV_SPLIT_PATH = os.path.join(DATASET, 'dev_split_Depression_AVEC2017.csv')
-TEST_SPLIT_PATH = os.path.join(DATASET, 'test_split_Depression_AVEC2017.csv')
-# TEST_SPLIT_PATH = os.path.join(DATASET, 'full_test_split.csv')
+TEST_SPLIT_PATH_1 = os.path.join(DATASET, 'test_split_Depression_AVEC2017.csv')
+TEST_SPLIT_PATH_2 = os.path.join(DATASET, 'full_test_split.csv')
+# CHANGE THIS TO USE A SPECIFIC TEST FILE
+TEST_SPLIT_PATH = TEST_SPLIT_PATH_1
 FULL_TRAIN_SPLIT_PATH = os.path.join(DATASET, 'full_train_split_Depression_AVEC2017.csv')
 COMP_DATASET_PATH = os.path.join(DATASET, 'complete_Depression_AVEC2017.csv')

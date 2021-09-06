@@ -372,6 +372,7 @@ def process_organise_data(main_logger,
     main_logger.info(f"The number of samples after processing spectrogram "
                      f"for the max is {total_windows_in_file_max}, and for "
                      f"the min is {total_windows_in_file_min}")
+    utilities.fix_test_files()
     if not os.path.exists(config.COMP_DATASET_PATH):
         if not os.path.exists(config.FULL_TRAIN_SPLIT_PATH):
             utilities.merge_csv(config.TRAIN_SPLIT_PATH, config.DEV_SPLIT_PATH,
