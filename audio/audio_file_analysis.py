@@ -460,7 +460,7 @@ def startup():
                   'terminate')
             sys.exit()
 
-    os.mkdir(current_directory)
+    os.makedirs(current_directory)
     utilities.create_directories(current_directory, config.FEATURE_FOLDERS)
 
     main_logger = utilities.setup_logger(current_directory)

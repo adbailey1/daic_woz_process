@@ -33,5 +33,6 @@ WORKSPACE_FILES_DIR = '/path/to/this/code/directory'
 TRAIN_SPLIT_PATH = os.path.join(DATASET, 'train_split_Depression_AVEC2017.csv')
 DEV_SPLIT_PATH = os.path.join(DATASET, 'dev_split_Depression_AVEC2017.csv')
 TEST_SPLIT_PATH = os.path.join(DATASET, 'test_split_Depression_AVEC2017.csv')
+# TEST_SPLIT_PATH = os.path.join(DATASET, 'full_test_split.csv')
 FULL_TRAIN_SPLIT_PATH = os.path.join(DATASET, 'full_train_split_Depression_AVEC2017.csv')
 COMP_DATASET_PATH = os.path.join(DATASET, 'complete_Depression_AVEC2017.csv')

@@ -79,4 +79,15 @@ workspace, and dataset directories etc. The main variables of interest are
 To run the framework, go to the daic_woz_process directory and run:
  `python -m run`
  
+This will create a database using the 'test_split_Depression_AVEC2017.csv' 
+file. This file does not contain depression labels, only ID and Gender. If 
+your dataset came with 'full_test_split.csv' file, this should have the 
+depression labels. To change which file is used in the pre-processing tool, 
+change the commented out line in config_files/config.py from:
+
+`TEST_SPLIT_PATH = os.path.join(DATASET, 'test_split_Depression_AVEC2017.csv')`
+
+to 
+
+`TEST_SPLIT_PATH = os.path.join(DATASET, 'full_test_split.csv')`
 

@@ -382,12 +382,29 @@ def merge_csv(path, path2, filename):
     # The test split doesn't have the same columns as the train/dev
     # Create these extra columns and fill them with -1
     if len(columnsa) > len(columnsb):
+        loc_to_indx = {i: header for i, header in enumerate(columnsa)}
+        for i in loc_to_indx:
+            if i < len(columnsb):
+                if loc_to_indx[i] == columnsb[i]:
+                    pass
+                elif loc_to_indx[i].lower() == columnsb[i].lower():
+                    b = b.rename(columns={columnsb[i]: columnsa[i]})
+                elif loc_to_indx[i].split('_')[-1] == columnsb[i].split('_')[-1]:
+                    b = b.rename(columns={columnsb[i]: columnsa[i]})
+                else:
+                    try:
+                        b.insert(i, loc_to_indx[i], [-1] * b.shape[0])
+                        columnsb = list(b)
+                    except:
+                        b[loc_to_indx[i]] = [-1] * b.shape[0]
+            else:
+                break
         difference = len(columnsa) - len(columnsb)
         names = columnsa[-difference:]
         h, _ = b.shape
-        zeros = [-1] * h
+        in_place = [-1] * h
         for i in range(difference):
-            b[names[i]] = zeros
+            b[names[i]] = in_place
 
     columnsb = list(b)
     # This checks that the column headers are the same in the two CSV files
