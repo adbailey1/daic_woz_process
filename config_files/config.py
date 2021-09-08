@@ -11,7 +11,7 @@ EXPERIMENT_DETAILS = {'FEATURE_EXP': 'mel',
                       'WHOLE_TRAIN': False,
                       'WINDOW_SIZE': 1024,
                       'OVERLAP': 50,
-                      'SVN': True,
+                      'SNV': True,
                       'SAMPLE_RATE': 16000,
                       'REMOVE_BACKGROUND': True}
 # Set True to split data into genders
