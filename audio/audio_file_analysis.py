@@ -126,7 +126,7 @@ def max_min_values(current_directory, win_size, hop_size, audio_paths,
 
 
 def create_database(labels, sample_rate, total_windows_in_file_max, max_value,
-                    current_directory, features_exp, win_size, hop_size, svn,
+                    current_directory, features_exp, win_size, hop_size, snv,
                     freq_bins, main_logger, whole_train, gender='-'):
     """
     Creates a database of extracted features from the raw input data such as
@@ -202,7 +202,7 @@ def create_database(labels, sample_rate, total_windows_in_file_max, max_value,
         feature_extractor = audio_feature_extractor.LogMelExtractor(
             sample_rate=sample_rate, window_size=win_size, hop_size=hop_size,
             mel_bins=freq_bins, fmin=fmin, fmax=fmax, window_func=window_func,
-            log=log, svn=svn)
+            log=log, snv=snv)
 
     # Loop through all the files and get the sampling rate, number of
     # samples and the time in minutes
@@ -240,7 +240,7 @@ def create_database(labels, sample_rate, total_windows_in_file_max, max_value,
         elif features_exp == 'spectrogram':
             feat = audio_feature_extractor.sepctrogram(updated_file,
                                                        win_size, hop_size, True,
-                                                       window_func, svn)
+                                                       window_func, snv)
             plotter.save_plain_plot(current_directory, str(folder), feat,
                                     features_exp)
             print('Folder Name: ', folder, ' dimensions are: ',
@@ -264,7 +264,7 @@ def create_database(labels, sample_rate, total_windows_in_file_max, max_value,
                 'mfcc_concat':
             mfcc = audio_feature_extractor.mfcc(updated_file, sample_rate,
                                                 freq_bins, win_size, hop_size,
-                                                window_func, svn)
+                                                window_func, snv)
             print('Folder Name: ', folder, ' dimensions are: ', mfcc.shape[
                 0], mfcc.shape[1])
             main_logger.info(
@@ -282,7 +282,7 @@ def create_database(labels, sample_rate, total_windows_in_file_max, max_value,
             feat_reshaped = np.reshape(mfcc, new_length)
         elif features_exp == 'raw':
             feat_reshaped = updated_file
-            if svn:
+            if snv:
                 feat_reshaped = \
                     audio_feature_extractor.standard_normal_variate(feat_reshaped)
             if whole_train:
@@ -344,7 +344,7 @@ def process_organise_data(main_logger,
     hop_size = config.HOP_SIZE
     freq_bins = config.EXPERIMENT_DETAILS['FREQ_BINS']
     whole_train = config.EXPERIMENT_DETAILS['WHOLE_TRAIN']
-    svn = config.EXPERIMENT_DETAILS['SVN']
+    snv = config.EXPERIMENT_DETAILS['SNV']
 
     main_logger.info(f"The experiment dir is: {features_exp}")
     main_logger.info(f"The feature dir: {current_directory}")
@@ -412,7 +412,7 @@ def process_organise_data(main_logger,
                                                   total_windows_in_file_max,
                                                   max_value, current_directory,
                                                   features_exp, win_size,
-                                                  hop_size, svn, freq_bins,
+                                                  hop_size, snv, freq_bins,
                                                   main_logger, whole_train,
                                                   gender=gender[i])
     else:
@@ -420,7 +420,7 @@ def process_organise_data(main_logger,
                                               total_windows_in_file_max,
                                               max_value, current_directory,
                                               features_exp, win_size,
-                                              hop_size, svn, freq_bins,
+                                              hop_size, snv, freq_bins,
                                               main_logger, whole_train)
 
     summary_labels = ['MaxSamples', 'MaxWindows', 'MinSamples', 'MinWindows',
