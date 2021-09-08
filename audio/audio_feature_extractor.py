@@ -22,12 +22,12 @@ class LogMelExtractor:
         logmel_spectrogram: numpy.array - The log-Mel spectrogram
     """
     def __init__(self, sample_rate, window_size, hop_size, mel_bins, fmin,
-                 fmax, window_func, log=True, svn=False):
+                 fmax, window_func, log=True, snv=False):
         self.window_size = window_size
         self.hop_size = hop_size
         self.window_func = window_func
         self.log = log
-        self.svn = svn
+        self.snv = snv
 
         # Output in the form of ((n_fft//2 + 1), mel_bins)
         self.melW = librosa.filters.mel(sr=sample_rate,
@@ -59,14 +59,14 @@ class LogMelExtractor:
 
         spectrogram = spectrogram.astype(np.float32).T
 
-        if self.svn:
+        if self.snv:
             spectrogram = standard_normal_variate(spectrogram)
 
         return spectrogram
 
 
 def sepctrogram(audio, window_size, hop_size, squared,
-                window_func=np.hanning(1024), svn=False):
+                window_func=np.hanning(1024), snv=False):
     """
     Computes the STFT of some audio data.
 
@@ -89,7 +89,7 @@ def sepctrogram(audio, window_size, hop_size, squared,
     if squared:
         stft_matrix = stft_matrix ** 2
 
-    if svn:
+    if snv:
         stft_matrix = standard_normal_variate(stft_matrix)
 
     return stft_matrix
@@ -126,7 +126,7 @@ def create_mfcc_delta(feature, concat=False):
 
 
 def mfcc(audio, sample_rate, freq_bins, window_size, hop_size,
-         window_func=np.hanning(1024), svn=False):
+         window_func=np.hanning(1024), snv=False):
     """
     Obtains the local differential (first and second order) of the MFCC
 
@@ -148,7 +148,7 @@ def mfcc(audio, sample_rate, freq_bins, window_size, hop_size,
                                 hop_length=hop_size,
                                 window=window_func)
 
-    if svn:
+    if snv:
         mfcc = standard_normal_variate(mfcc)
 
     return mfcc
