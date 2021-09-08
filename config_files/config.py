@@ -4,7 +4,7 @@ import numpy as np
 # FEATURE_EXP: logmel, mel, raw, MFCC, MFCC_concat, or text
 # WHOLE_TRAIN: This setting is for mitigating the variable length of the data
 # by zero padding
-# SVN will normalise every file to mean=0 and standard deviation=1
+# SNV will normalise every file to mean=0 and standard deviation=1
 EXPERIMENT_DETAILS = {'FEATURE_EXP': 'mel',
                       'FREQ_BINS': 40,
                       'DATASET_IS_BACKGROUND': False,
