@@ -44,7 +44,7 @@ def get_meta_data(dataset_path):
     list_dir_dataset_path = os.listdir(dataset_path)
     list_dir_dataset_path.sort()
     for i in list_dir_dataset_path:
-        if 'P' in i:
+        if i.endswith('_P'):
             folder_list.append(i)
             for j in os.listdir(os.path.join(dataset_path,
                                              i)):
