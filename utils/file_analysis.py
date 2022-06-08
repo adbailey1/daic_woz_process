@@ -44,22 +44,17 @@ def get_meta_data(dataset_path):
     list_dir_dataset_path = os.listdir(dataset_path)
     list_dir_dataset_path.sort()
     for i in list_dir_dataset_path:
-        if 'P' in i:
+        if i.endswith('_P'):
             folder_list.append(i)
-            for j in os.listdir(os.path.join(dataset_path,
-                                             i)):
+            for j in os.listdir(os.path.join(dataset_path, i)):
                 if 'wav' in j:
                     audio_files.append(j)
-                    audio_paths.append(os.path.join(dataset_path,
-                                                    i,
-                                                    j))
+                    audio_paths.append(os.path.join(dataset_path, i, j))
                 if 'TRANSCRIPT' in j:
                     if 'lock' in j or '._' in j:
                         pass
                     else:
-                        transcript_paths.append(os.path.join(dataset_path,
-                                                             i,
-                                                             j))
+                        transcript_paths.append(os.path.join(dataset_path, i, j))
 
     return folder_list, audio_paths, transcript_paths
 
